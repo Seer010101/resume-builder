@@ -1889,33 +1889,35 @@ button, input, select, textarea { font-family: inherit; }
   .dig-card { background: none !important; border: none !important; padding: 0 !important; margin: 10px 0 !important; box-shadow: none !important; transform: none !important; backdrop-filter: none !important; }
   .dig-card-icon { display: none !important; }
   .dig-card-title { font-size: 14px !important; }
-  .dig-card-body { display: block !important; }
+  .dig-card-body { display: flex !important; gap: 14px !important; align-items: flex-start !important; }
   .dig-card-text { font-size: 13px !important; }
   .dig-card-photo {
-    width: 100% !important; height: auto !important;
-    max-height: 200px !important;
+    width: 128px !important;
+    height: 96px !important;
+    flex: 0 0 auto !important;
     border: 1px solid #cccccc !important;
     border-radius: 4px !important;
     transform: none !important;
-    margin-top: 6px !important;
+    margin: 0 !important;
     box-shadow: none !important;
+    object-fit: cover !important;
   }
   .dig-motto { font-size: 15px !important; color: #000000 !important; }
   /* 简历模块纵深效果在打印时全部还原为平面 */
   .resume-section { transform: none !important; transition: none !important; }
   .sec-no { color: #000000 !important; opacity: 1 !important; }
-  .module-content { display: block !important; }
+  .module-content { display: flex !important; gap: 16px !important; align-items: flex-start !important; }
   .module-photo {
+    width: 132px !important;
+    height: 96px !important;
+    flex: 0 0 auto !important;
     transform: none !important;
-    width: 100% !important;
-    height: auto !important;
-    max-height: 220px !important;
-    margin: 8px 0 0 !important;
+    margin: 0 !important;
     border: 1px solid #cccccc !important;
     border-radius: 4px !important;
     box-shadow: none !important;
   }
-  .module-photo img { object-fit: contain !important; }
+  .module-photo img { object-fit: cover !important; }
   .ach-list li { padding-left: 22px !important; }
   .ach-list li::before {
     background: #eeeeee !important;
@@ -3060,6 +3062,23 @@ function renderForm() {
 /* ================================================================
    ===== 数据导入导出 =====
    ================================================================ */
+/* 打印一页适配：测量简历高度，超出 A4 可用高度则整体缩放 */
+function preparePrintScale() {
+  const wrap = $('resume-wrap');
+  const resume = $('resume');
+  if (!wrap || !resume) return;
+  wrap.style.zoom = ''; /* 先清除旧缩放重新测量 */
+  const contentH = resume.scrollHeight;
+  const pageH = 1010; /* A4 297mm - 上下边距 24mm ≈ 1032px，留余量 */
+  if (contentH > pageH) {
+    wrap.style.zoom = (pageH / contentH).toFixed(3);
+  }
+}
+function clearPrintScale() {
+  const wrap = $('resume-wrap');
+  if (wrap) wrap.style.zoom = '';
+}
+
 function initExportImport() {
   $('export-json-btn').addEventListener('click', exportJSON);
   $('print-btn').addEventListener('click', function () {
@@ -3068,7 +3087,11 @@ function initExportImport() {
     applyView('studio');
     closeDock();
     setMode('paper');
-    setTimeout(function () { window.print(); }, 650);
+    setTimeout(function () {
+      preparePrintScale(); /* 自动缩放至一页 */
+      window.print();
+      setTimeout(clearPrintScale, 200);
+    }, 650);
   });
 }
 
