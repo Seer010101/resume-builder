@@ -254,6 +254,22 @@ button, input, select, textarea { font-family: inherit; }
 [data-theme="noir"] .avatar { border: 1px solid var(--brand); box-shadow: 0 0 0 3px rgba(255, 0, 102, 0.12); }
 [data-theme="noir"] .resume:not(.digital) { display: grid; grid-template-columns: 240px 1fr; gap: 30px; }
 [data-theme="noir"] .resume:not(.digital) .resume-header { flex-direction: column; align-items: flex-start; border-right: 2px solid var(--brand); border-bottom: none; padding-right: 26px; padding-bottom: 0; margin-bottom: 0; }
+/* 洋红主题电子版：卡片照片放文字上方（不并排，避免把文字挤到右边） */
+[data-theme="noir"] .resume.digital .dig-card-body {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+[data-theme="noir"] .resume.digital .dig-card-photo {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 220px !important;
+  object-fit: cover !important;
+  border-radius: 12px !important;
+  transform: none !important;
+  margin: 0 0 12px !important;
+}
+[data-theme="noir"] .resume.digital .dig-card:hover .dig-card-photo { transform: none !important; }
+[data-theme="noir"] .resume.digital .dig-card-text { flex: none !important; width: 100% !important; }
 [data-theme="noir"] .resume-contact { text-align: left; }
 
 /* ================================================================
