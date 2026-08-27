@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="classic">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一键生成简历</title>
+<style>
+/* ================================================================
+   全局基础
+   ================================================================ */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg);
+  background-attachment: fixed;
+  background-size: cover;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  transition: background-color .4s ease, color .4s ease;
+}
+
+/* ================================================================
+   ===== 主题变量 =====
+   四套主题全部通过 CSS 变量定义，切换主题只需改变 <html data-theme="xxx">
+   ================================================================ */
+
+/* ---------- 主题 1：Classic Corporate（经典商务） ----------
+   氛围：专业、冷静、信任 */
+:root,
+:root[data-theme="classic"] {
+  --bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --card-border: 1px solid transparent;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --card-radius: 12px;
+  --text-main: #2c3e50;
+  --text-muted: #7f8c8d;
+  --accent: #3498db;
+  --divider: #e2e8f0;
+  --chip-skill-bg: #3498db;
+  --chip-skill-color: #ffffff;
+  --chip-skill-border: 1px solid #3498db;
+  --chip-trait-bg: #ecf0f1;
+  --chip-trait-color: #34495e;
+  --chip-trait-border: 1px solid #ecf0f1;
+  --input-bg: #ffffff;
+  --input-border: #d5dde5;
+  --input-color: #2c3e50;
+  --input-focus: #3498db;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-head: var(--font-body);
+  --line-height: 1.65;
+}
+
+/* ---------- 主题 2：Glassmorphism Dream（毛玻璃梦幻） ----------
+   氛围：梦幻、创意、未来感 */
+:root[data-theme="glass"] {
+  --bg: linear-gradient(135deg, #667eea, #764ba2);
+  --card-bg: rgba(255, 255, 255, 0.15);
+  --card-border: 1px solid rgba(255, 255, 255, 0.2);
+  --card-shadow: 0 8px 32px rgba(31, 38, 135, 0.35);
+  --card-radius: 18px;
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.72);
+  --accent: #ffd700;
+  --divider: rgba(255, 255, 255, 0.28);
+  --chip-skill-bg: rgba(255, 255, 255, 0.15);
+  --chip-skill-color: #ffffff;
+  --chip-skill-border: 1px solid rgba(255, 255, 255, 0.3);
+  --chip-trait-bg: rgba(255, 255, 255, 0.08);
+  --chip-trait-color: rgba(255, 255, 255, 0.85);
+  --chip-trait-border: 1px solid rgba(255, 255, 255, 0.2);
+  --input-bg: rgba(255, 255, 255, 0.10);
+  --input-border: rgba(255, 255, 255, 0.25);
+  --input-color: #ffffff;
+  --input-focus: #ffd700;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-head: var(--font-body);
+  --line-height: 1.7;
+}
+/* 毛玻璃卡片：模糊背景 */
+[data-theme="glass"] .toolbar,
+[data-theme="glass"] .form-panel,
+[data-theme="glass"] .resume,
+[data-theme="glass"] .save-status {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ---------- 主题 3：Minimalist Zen（极简日系） ----------
+   氛围：宁静、精致、书卷气 */
+:root[data-theme="zen"] {
+  --bg: #faf9f6;
+  --card-bg: #ffffff;
+  --card-border: 1px solid #e8e8e8;
+  --card-shadow: none;
+  --card-radius: 0;
+  --text-main: #333333;
+  --text-muted: #9a9a9a;
+  --accent: #c0392b;
+  --divider: #e8e8e8;
+  --chip-skill-bg: transparent;
+  --chip-skill-color: #333333;
+  --chip-skill-border: 1px solid transparent;
+  --chip-trait-bg: transparent;
+  --chip-trait-color: #333333;
+  --chip-trait-border: 1px solid transparent;
+  --input-bg: #ffffff;
+  --input-border: #e8e8e8;
+  --input-color: #333333;
+  --input-focus: #c0392b;
+  --font-body: Georgia, "Times New Roman", serif;
+  --font-head: Georgia, "Times New Roman", serif;
+  --line-height: 2.0;
+}
+/* 极简标签：技能=文字+下划线，特质=文字+圆点前缀 */
+[data-theme="zen"] .chip-skill { text-decoration: underline; text-underline-offset: 3px; }
+[data-theme="zen"] .chip-trait::before { content: "•"; color: var(--accent); margin-right: 6px; }
+[data-theme="zen"] .tag-cloud .chip { padding: 2px 4px; }
+
+/* ---------- 主题 4：Noir Magenta（暗黑洋红·黑色电影） ----------
+   氛围：神秘、悬疑、冷酷，仅黑/白/洋红三色 */
+:root[data-theme="noir"] {
+  --bg: #000000;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: 1px solid #ff0066;
+  --card-shadow: 0 0 20px rgba(255, 0, 102, 0.2);
+  --card-radius: 4px;
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.60);
+  --accent: #ff0066;
+  --divider: #ff0066;
+  --chip-skill-bg: transparent;
+  --chip-skill-color: #ffffff;
+  --chip-skill-border: 1px solid #ff0066;
+  --chip-trait-bg: transparent;
+  --chip-trait-color: #ffffff;
+  --chip-trait-border: 1px solid rgba(255, 255, 255, 0.3);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.25);
+  --input-color: #ffffff;
+  --input-focus: #ff0066;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-head: "Courier New", Courier, monospace;
+  --line-height: 1.7;
+}
+/* Noir 特殊构图：预览区垂直线分割（左：姓名/联系方式，右：详细内容），对称布局 */
+[data-theme="noir"] .resume {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 30px;
+  padding: 36px 40px;
+}
+[data-theme="noir"] .resume-header {
+  flex-direction: column;
+  align-items: flex-start;
+  border-right: 2px solid #ff0066;
+  padding-right: 30px;
+  margin-bottom: 0;
+}
+[data-theme="noir"] .resume-contact { text-align: left; }
+[data-theme="noir"] .resume-name { font-family: var(--font-head); letter-spacing: .05em; }
+[data-theme="noir"] .resume-divider { border-top: 2px solid #ff0066; }
+[data-theme="noir"] .motto { color: #ff0066; font-weight: 700; }
+[data-theme="noir"] .avatar { border: 1px solid #ff0066; }
+[data-theme="noir"] .btn-primary { background: #ff0066; border-color: #ff0066; }
+
+/* ================================================================
+   工具栏（顶部）
+   ================================================================ */
+.toolbar {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--divider);
+  box-shadow: var(--card-shadow);
+  transition: background-color .4s ease, border-color .4s ease, box-shadow .4s ease;
+}
+.toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.app-title { font-size: 17px; margin: 0; color: var(--text-main); }
+
+.btn {
+  background: transparent;
+  border: 1px solid var(--input-border);
+  color: var(--text-main);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: background-color .4s ease, color .4s ease, border-color .4s ease;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: .88; color: #fff; }
+
+/* 主题切换：四个小圆点 */
+.theme-switch { display: inline-flex; align-items: center; gap: 8px; margin-left: 4px; }
+.theme-dot {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.18);
+  cursor: pointer; padding: 0;
+  transition: transform .4s ease, box-shadow .4s ease;
+}
+.theme-dot[data-theme="classic"] { background: #3498db; }
+.theme-dot[data-theme="glass"]  { background: linear-gradient(135deg, #667eea, #764ba2); }
+.theme-dot[data-theme="zen"]    { background: #faf9f6; border-color: #c0392b; }
+.theme-dot[data-theme="noir"]   { background: #000000; border-color: #ff0066; }
+.theme-dot.active { transform: scale(1.25); box-shadow: 0 0 0 3px var(--accent); }
+
+/* ================================================================
+   主布局：左 40% 表单 / 右 60% 预览
+   ================================================================ */
+.layout {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ---------- 左侧表单 ---------- */
+.form-panel {
+  width: 40%;
+  min-width: 300px;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 20px;
+  overflow-y: auto;
+  transition: background-color .4s ease, border-color .4s ease, box-shadow .4s ease, color .4s ease;
+}
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.form-title { font-size: 15px; font-weight: 700; color: var(--text-main); }
+
+/* 折叠状态：只显示字段标题；标签组件显示数量 */
+.form-panel.collapsed .field-body { display: none; }
+.form-panel.collapsed .field { margin-bottom: 10px; }
+.tag-count { display: none; color: var(--text-muted); font-weight: 400; }
+.form-panel.collapsed .tag-count { display: inline; }
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-main);
+}
+.field input[type="text"],
+.field textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-color);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  transition: background-color .4s ease, color .4s ease, border-color .4s ease;
+}
+.field textarea { resize: vertical; line-height: 1.6; }
+.field input::placeholder, .field textarea::placeholder {
+  color: var(--text-muted);
+  opacity: .65;
+}
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--input-focus);
+}
+.field-hint { font-size: 11px; color: var(--text-muted); margin: 5px 0 0; }
+
+/* 头像上传（字段 0） */
+.avatar-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.avatar-status { font-size: 12px; color: var(--text-muted); margin: 8px 0 0; }
+.avatar-status.ok { color: #2ecc71; font-weight: 600; }
+
+/* ---------- 标签组件 ---------- */
+.tag-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px dashed var(--input-border);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--input-bg);
+  transition: background-color .4s ease, border-color .4s ease;
+}
+.tag-input:focus-within { border-color: var(--input-focus); }
+.tag-input .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-row { display: flex; gap: 6px; }
+.tag-row .tag-field {
+  flex: 1;
+  min-width: 120px;
+  background: transparent;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  color: var(--input-color);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: var(--font-body);
+}
+.tag-row .tag-field:focus { outline: none; border-color: var(--input-focus); }
+.tag-row .btn { padding: 6px 10px; font-size: 12px; }
+
+/* 通用胶囊标签 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 1.5;
+  transition: background-color .4s ease, color .4s ease, border-color .4s ease;
+}
+.chip-skill { background: var(--chip-skill-bg); color: var(--chip-skill-color); border: var(--chip-skill-border); }
+.chip-trait { background: var(--chip-trait-bg); color: var(--chip-trait-color); border: var(--chip-trait-border); }
+/* 表单内的标签芯片 */
+.tag-input .chip {
+  font-size: 12px;
+  padding: 3px 10px;
+  background: var(--chip-skill-bg);
+  color: var(--chip-skill-color);
+  border: var(--chip-skill-border);
+}
+.chip-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 0 2px;
+  font-size: 14px;
+  line-height: 1;
+  opacity: .7;
+}
+.chip-remove:hover { opacity: 1; }
+
+/* ---------- 右侧预览 ---------- */
+.preview-panel {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8px;
+}
+.resume {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  line-height: var(--line-height);
+  width: min(210mm, 100%);
+  padding: 40px 44px;
+  transition: background-color .4s ease, color .4s ease, border-color .4s ease, box-shadow .4s ease;
+}
+
+.resume-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.resume-id { display: flex; align-items: center; gap: 16px; }
+.avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+}
+.resume-name { font-size: 28px; font-weight: 700; margin: 0; font-family: var(--font-head); }
+.resume-title { color: var(--text-muted); margin: 4px 0 0; font-size: 15px; }
+.resume-contact { text-align: right; color: var(--text-muted); font-size: 13px; }
+.resume-contact p { margin: 2px 0; }
+
+.resume-section { margin-top: 18px; }
+.preview-heading {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--accent);
+  margin: 0 0 10px;
+}
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.text-block { white-space: pre-line; margin: 0; font-size: 14px; }
+.resume-divider { border: none; border-top: 1px solid var(--divider); margin: 22px 0; }
+.motto {
+  font-style: italic;
+  text-align: right;
+  color: var(--text-muted);
+  margin: 24px 0 0;
+  font-size: 15px;
+}
+.empty-hint { color: var(--text-muted); text-align: center; padding: 40px 0; font-size: 14px; }
+
+/* ================================================================
+   左下角浮动：保存状态 / 导入数据 / 背景音乐
+   ================================================================ */
+.save-status {
+  position: fixed;
+  left: 16px; bottom: 16px;
+  z-index: 40;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: 10px;
+  box-shadow: var(--card-shadow);
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-main);
+  opacity: .75;
+  transition: background-color .4s ease, color .4s ease, border-color .4s ease;
+}
+.save-status.flash { animation: save-flash .6s ease; }
+@keyframes save-flash {
+  0%   { transform: scale(1);    opacity: .75; }
+  40%  { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1);    opacity: .75; }
+}
+.import-link {
+  position: fixed;
+  left: 16px; bottom: 54px;
+  z-index: 40;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 6px;
+}
+.music-btn {
+  position: fixed;
+  left: 16px; bottom: 88px;
+  z-index: 40;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: 10px;
+  box-shadow: var(--card-shadow);
+  color: var(--text-main);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 12px;
+}
+
+/* ================================================================
+   浮动装饰（毛玻璃主题背景 Emoji）与鼠标跟随
+   ================================================================ */
+.emoji-decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: none;
+}
+[data-theme="glass"] .emoji-decor { display: block; }
+.ed {
+  position: absolute;
+  font-size: 34px;
+  opacity: .5;
+  animation: floaty 8s ease-in-out infinite;
+}
+.ed-1 { top: 12%; left: 8%; }
+.ed-2 { top: 68%; left: 14%; animation-delay: -2s; }
+.ed-3 { top: 18%; right: 12%; animation-delay: -4s; }
+.ed-4 { bottom: 8%; right: 22%; animation-delay: -6s; font-size: 26px; }
+.ed-5 { top: 46%; left: 46%; animation-delay: -3s; font-size: 24px; }
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-24px) rotate(8deg); }
+}
+
+.cursor-emoji {
+  position: fixed;
+  right: 18px; bottom: 18px;
+  z-index: 30;
+  font-size: 26px;
+  pointer-events: none;
+  transition: transform .25s ease-out;
+}
+
+/* Toast 提示 */
+.toast {
+  position: fixed;
+  top: 70px; left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 60;
+  transition: opacity .3s ease, transform .3s ease;
+  max-width: 90vw;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ================================================================
+   响应式：<768px 上下堆叠，表单在上、预览在下
+   ================================================================ */
+@media (max-width: 767px) {
+  body { min-height: auto; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar-left, .toolbar-right { justify-content: space-between; }
+  .layout {
+    flex-direction: column;
+    overflow: visible;
+    padding: 12px;
+  }
+  .form-panel { width: 100%; min-width: 0; max-height: none; }
+  .preview-panel { width: 100%; padding: 4px 0 16px; }
+  .resume { width: 100%; padding: 24px 18px; }
+  .avatar { width: 60px; height: 60px; }
+  .resume-name { font-size: 22px; }
+  [data-theme="noir"] .resume { grid-template-columns: 1fr; gap: 20px; padding: 24px 18px; }
+  [data-theme="noir"] .resume-header {
+    border-right: none;
+    border-bottom: 2px solid #ff0066;
+    padding: 0 0 16px;
+  }
+  .save-status, .music-btn { font-size: 11px; padding: 5px 10px; }
+}
+
+/* ================================================================
+   ===== 打印样式 =====
+   重中之重：白底黑字、无按钮、无主题色、无阴影、A4 标准
+   ================================================================ */
+@media print {
+  @page { size: A4; margin: 12mm; }
+
+  /* 强制所有元素按黑白打印（保证背景色可打印） */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 隐藏：表单区、工具栏、主题切换、折叠按钮、保存状态、导入/音乐按钮、装饰、Toast */
+  .toolbar,
+  .form-panel,
+  .save-status,
+  .import-link,
+  .music-btn,
+  .cursor-emoji,
+  .emoji-decor,
+  .toast,
+  .empty-hint {
+    display: none !important;
+  }
+
+  .layout {
+    display: block !important;
+    height: auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .preview-panel {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* 卡片：移除阴影 / 圆角 / 边框，内边距保留 */
+  .resume {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: block !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Noir 垂直线分割在打印时还原为单栏 */
+  .resume-header {
+    flex-direction: row !important;
+    border-right: none !important;
+    padding: 0 !important;
+    margin-bottom: 8px !important;
+  }
+  .resume-contact { text-align: right !important; }
+
+  /* 强制所有文字黑色、无背景装饰 */
+  .resume, .resume * {
+    color: #000000 !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #000000 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* 头像保留（Base64 图片可正常打印） */
+  .avatar {
+    border: 1px solid #cccccc !important;
+    background: none !important;
+  }
+
+  /* 标签：浅灰背景 + 黑字 */
+  .chip {
+    background: #eeeeee !important;
+    color: #000000 !important;
+    border: 1px solid #cccccc !important;
+    border-radius: 999px !important;
+    text-decoration: none !important;
+  }
+  .chip::before { color: #000000 !important; }
+
+  .resume-divider { border-top: 1px solid #000000 !important; }
+  .preview-heading { color: #000000 !important; }
+  .motto { color: #000000 !important; font-weight: normal !important; }
+  .resume-title, .resume-contact { color: #000000 !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- 毛玻璃主题的浮动 Emoji 装饰 -->
+<div class="emoji-decor" aria-hidden="true">
+  <span class="ed ed-1">🍓</span>
+  <span class="ed ed-2">🍇</span>
+  <span class="ed ed-3">✨</span>
+  <span class="ed ed-4">🍓</span>
+  <span class="ed ed-5">✨</span>
+</div>
+
+<!-- ============ 顶部工具栏 ============ -->
+<header class="toolbar">
+  <div class="toolbar-left">
+    <h1 class="app-title">📄 一键生成简历</h1>
+  </div>
+  <div class="toolbar-right">
+    <button id="export-json-btn" class="btn" title="Ctrl+S">📋 导出JSON</button>
+    <button id="print-btn" class="btn btn-primary" title="Ctrl+P">📄 导出PDF</button>
+    <div class="theme-switch" role="group" aria-label="主题切换">
+      <button class="theme-dot" data-theme="classic" title="Classic Corporate · 经典商务" aria-label="经典商务主题"></button>
+      <button class="theme-dot" data-theme="glass" title="Glassmorphism Dream · 毛玻璃梦幻" aria-label="毛玻璃梦幻主题"></button>
+      <button class="theme-dot" data-theme="zen" title="Minimalist Zen · 极简日系" aria-label="极简日系主题"></button>
+      <button class="theme-dot" data-theme="noir" title="Noir Magenta · 暗黑洋红" aria-label="暗黑洋红主题"></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 主体：左表单 / 右预览 ============ -->
+<main class="layout">
+
+  <!-- 左侧表单区（40%） -->
+  <aside class="form-panel" id="form-panel">
+    <div class="form-header">
+      <span class="form-title">✏️ 填写信息</span>
+      <button id="collapse-btn" class="btn" title="折叠后仅显示字段标题">📂 折叠全部</button>
+    </div>
+    <form id="resume-form" autocomplete="off" onsubmit="return false">
+
+      <!-- 字段 0：上传头像 -->
+      <div class="field">
+        <label>头像上传</label>
+        <div class="field-body">
+          <div class="avatar-row">
+            <input type="file" id="avatar-input" accept="image/png, image/jpeg, image/webp" hidden>
+            <button type="button" class="btn" id="avatar-pick-btn">📷 选择图片</button>
+            <button type="button" class="btn" id="avatar-remove-btn" hidden>🗑 移除</button>
+          </div>
+          <p class="avatar-status" id="avatar-status">未上传</p>
+          <p class="field-hint">自动压缩至 200×200，JPEG 质量 0.7，存入 localStorage（键名 resumeAvatar）</p>
+        </div>
+      </div>
+
+      <!-- 字段 1：姓名 -->
+      <div class="field">
+        <label for="f-name">姓名</label>
+        <div class="field-body"><input type="text" id="f-name" placeholder="请输入姓名"></div>
+      </div>
+
+      <!-- 字段 2：求职意向 -->
+      <div class="field">
+        <label for="f-title">求职意向</label>
+        <div class="field-body"><input type="text" id="f-title" placeholder="如：全栈开发工程师"></div>
+      </div>
+
+      <!-- 字段 3：联系电话 -->
+      <div class="field">
+        <label for="f-phone">联系电话</label>
+        <div class="field-body"><input type="text" id="f-phone" placeholder="请输入手机号"></div>
+      </div>
+
+      <!-- 字段 4：电子邮箱 -->
+      <div class="field">
+        <label for="f-email">电子邮箱</label>
+        <div class="field-body"><input type="text" id="f-email" placeholder="请输入邮箱地址"></div>
+      </div>
+
+      <!-- 字段 5：个人简介（textarea 4 行） -->
+      <div class="field">
+        <label for="f-bio">个人简介</label>
+        <div class="field-body"><textarea id="f-bio" rows="4" placeholder="请描述您的核心优势与职业目标"></textarea></div>
+      </div>
+
+      <!-- 字段 6：教育经历（textarea 3 行） -->
+      <div class="field">
+        <label for="f-education">教育经历</label>
+        <div class="field-body"><textarea id="f-education" rows="3" placeholder="请按时间倒序填写"></textarea></div>
+      </div>
+
+      <!-- 字段 7：工作/项目经历（textarea 5 行） -->
+      <div class="field">
+        <label for="f-experience">工作/项目经历</label>
+        <div class="field-body"><textarea id="f-experience" rows="5" placeholder="请详细描述您的职责与成果"></textarea></div>
+      </div>
+
+      <!-- 字段 8：技能标签（Tag 输入组件） -->
+      <div class="field">
+        <label>技能标签 <span class="tag-count" id="skills-count"></span></label>
+        <div class="field-body">
+          <div class="tag-input" id="tag-skills">
+            <div class="chips" id="skills-chips"></div>
+            <div class="tag-row">
+              <input type="text" class="tag-field" id="skills-input" placeholder="输入技能，回车或点击添加">
+              <button type="button" class="btn tag-add">＋ 添加</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 字段 9：个人特质（Tag 输入组件） -->
+      <div class="field">
+        <label>个人特质 <span class="tag-count" id="traits-count"></span></label>
+        <div class="field-body">
+          <div class="tag-input" id="tag-traits">
+            <div class="chips" id="traits-chips"></div>
+            <div class="tag-row">
+              <input type="text" class="tag-field" id="traits-input" placeholder="输入特质，回车或点击添加">
+              <button type="button" class="btn tag-add">＋ 添加</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 字段 10：座右铭 -->
+      <div class="field">
+        <label for="f-motto">座右铭</label>
+        <div class="field-body"><input type="text" id="f-motto" placeholder="写一句激励您的话"></div>
+      </div>
+
+    </form>
+  </aside>
+
+  <!-- 右侧预览区（60%） -->
+  <section class="preview-panel" id="preview-panel">
+    <div class="resume" id="resume"></div>
+  </section>
+</main>
+
+<!-- 左下角：保存状态 / 导入数据 / 背景音乐 -->
+<div class="save-status" id="save-status">💾 已自动保存</div>
+<button class="import-link" id="import-btn" title="选择 JSON 文件恢复数据">⚙️ 导入数据</button>
+<button class="music-btn" id="music-btn" title="Web Audio 生成简单旋律">▶️ 播放音乐</button>
+<input type="file" id="import-file" accept=".json,application/json" hidden>
+
+<!-- 右下角：鼠标跟随装饰 -->
+<div class="cursor-emoji" id="cursor-emoji">🐰</div>
+
+<!-- Toast 提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ================= 工具函数 ================= */
+function $(id) { return document.getElementById(id); }
+
+/* 安全转义：所有用户输入渲染到预览区前必须经过此函数，防止 XSS 与布局破坏 */
+function escapeHtml(str) {
+  return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+/* 防抖：实时渲染与保存均使用 300ms 防抖，避免输入中文时卡顿 */
+function debounce(fn, ms) {
+  let t = null;
+  return function () {
+    const args = arguments;
+    clearTimeout(t);
+    t = setTimeout(function () { fn.apply(null, args); }, ms);
+  };
+}
+
+const scheduleRender = debounce(renderPreview, 300);
+const scheduleSave = debounce(persist, 400);
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+}
+
+function flashSaved() {
+  const el = $('save-status');
+  el.classList.remove('flash');
+  void el.offsetWidth; /* 强制重排以重启动画 */
+  el.classList.add('flash');
+}
+
+/* ================= 数据模型与持久化 ================= */
+const STORE_KEY = 'resumeData';
+const AVATAR_KEY = 'resumeAvatar';
+const THEME_KEY = 'resumeTheme';
+
+/* 首次加载（无数据）时的示例简历：空状态引导 */
+const SAMPLE_DATA = {
+  name: '张明',
+  title: '全栈开发工程师',
+  phone: '138-0013-8000',
+  email: 'zhangming@example.com',
+  bio: '5 年全栈开发经验，熟悉 Vue / React 与 Node.js，主导过多个从 0 到 1 的项目交付，热爱技术分享与团队协作，追求简洁高效的工程实践。',
+  education: '2014.09 – 2018.06  某大学 · 计算机科学与技术 · 本科\n主修：数据结构、操作系统、计算机网络、数据库原理',
+  experience: '2018.07 – 至今  某科技有限公司 · 全栈开发工程师\n负责核心业务系统前后端开发与架构优化，性能提升 40%\n\n2020.03 – 2021.06  开源组件库 XXX · 核心贡献者\n累计提交 500+ 次，维护组件 30+ 个',
+  skills: ['JavaScript', 'TypeScript', 'Vue', 'React', 'Node.js', 'MySQL', 'Docker'],
+  traits: ['责任心强', '善于沟通', '快速学习', '团队协作'],
+  motto: 'Stay hungry, stay foolish.'
+};
+
+const state = { data: null, theme: 'classic' };
+
+function loadData() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { d = null; }
+  if (!d || typeof d !== 'object' || Array.isArray(d)) {
+    d = JSON.parse(JSON.stringify(SAMPLE_DATA)); /* 首次加载：填充示例数据 */
+  }
+  d.skills = Array.isArray(d.skills) ? d.skills : [];
+  d.traits = Array.isArray(d.traits) ? d.traits : [];
+  try { d.avatar = localStorage.getItem(AVATAR_KEY) || ''; } catch (e) { d.avatar = ''; }
+  d.avatarName = d.avatarName || '';
+  return d;
+}
+
+/* 保存到 localStorage：头像单独存 resumeAvatar 键；try-catch 捕获容量超限 */
+function persist() {
+  const payload = Object.assign({}, state.data);
+  delete payload.avatar;
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(payload));
+    if (state.data.avatar) localStorage.setItem(AVATAR_KEY, state.data.avatar);
+    else localStorage.removeItem(AVATAR_KEY);
+    flashSaved();
+  } catch (e) {
+    if (e && e.name === 'QuotaExceededError') {
+      alert('图片过大，请选择更小的图片');
+      state.data.avatar = '';
+      state.data.avatarName = '';
+      updateAvatarStatus();
+      renderPreview();
+    } else {
+      alert('保存失败：浏览器存储不可用');
+    }
+  }
+}
+
+/* ================= 主题切换 ================= */
+function setTheme(t) {
+  state.theme = t;
+  document.documentElement.setAttribute('data-theme', t); /* 切换 CSS 变量组 */
+  document.querySelectorAll('.theme-dot').forEach(function (dot) {
+    dot.classList.toggle('active', dot.dataset.theme === t);
+  });
+  try { localStorage.setItem(THEME_KEY, t); } catch (e) { /* 忽略 */ }
+}
+
+function initThemeDots() {
+  document.querySelectorAll('.theme-dot').forEach(function (dot) {
+    dot.addEventListener('click', function () { setTheme(dot.dataset.theme); });
+  });
+}
+
+/* ================= 折叠 / 展开所有表单 ================= */
+function initCollapse() {
+  $('collapse-btn').addEventListener('click', function () {
+    const collapsed = $('form-panel').classList.toggle('collapsed');
+    this.textContent = collapsed ? '📂 展开全部' : '📂 折叠全部';
+  });
+}
+
+/* ================================================================
+   ===== 头像上传逻辑 =====
+   选择图片 → Canvas 压缩至 200×200（JPEG 0.7）→ Base64 存入 resumeAvatar 键
+   ================================================================ */
+function initAvatar() {
+  const input = $('avatar-input');
+  $('avatar-pick-btn').addEventListener('click', function () { input.click(); });
+
+  input.addEventListener('change', function () {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (!/^image\/(png|jpeg|webp)$/i.test(file.type)) {
+      alert('仅支持 PNG / JPEG / WebP 格式的图片');
+      return;
+    }
+    compressAvatar(file);
+  });
+
+  $('avatar-remove-btn').addEventListener('click', function () {
+    state.data.avatar = '';
+    state.data.avatarName = '';
+    try { localStorage.removeItem(AVATAR_KEY); } catch (e) { /* 忽略 */ }
+    updateAvatarStatus();
+    renderPreview();
+    flashSaved();
+  });
+}
+
+function compressAvatar(file) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      /* Canvas 压缩：最大宽高 200×200，JPEG 质量 0.7 */
+      const MAX = 200;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      state.data.avatar = canvas.toDataURL('image/jpeg', 0.7);
+      state.data.avatarName = file.name;
+      updateAvatarStatus();
+      renderPreview();
+      persist(); /* 内含 try-catch：容量超限时提示「图片过大」 */
+    };
+    img.onerror = function () { alert('图片读取失败，请更换图片'); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateAvatarStatus() {
+  const status = $('avatar-status');
+  const removeBtn = $('avatar-remove-btn');
+  if (state.data.avatar) {
+    status.textContent = '✅ 已上传 (' + state.data.avatarName + ')';
+    status.classList.add('ok');
+    removeBtn.hidden = false;
+  } else {
+    status.textContent = '未上传';
+    status.classList.remove('ok');
+    removeBtn.hidden = true;
+  }
+}
+
+/* 姓名首字母 SVG 圆形头像：背景色由姓名哈希生成（固定颜色） */
+function nameColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return 'hsl(' + (h % 360) + ', 55%, 48%)';
+}
+function svgAvatar(name) {
+  const ch = (name || '?').trim().charAt(0) || '?';
+  const color = nameColor(name);
+  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>" +
+    "<circle cx='80' cy='80' r='80' fill='" + color + "'/>" +
+    "<text x='80' y='80' text-anchor='middle' dominant-baseline='central' font-family='system-ui, sans-serif' font-size='76' fill='#fff'>" + ch + "</text></svg>";
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+/* ================================================================
+   ===== 标签组件逻辑 =====
+   文本框 + 添加按钮：回车 / 逗号 / 失焦 / 点击添加；× 删除；退格删除最后一个
+   ================================================================ */
+const tagRenderers = {};
+
+function initTagInput(key, containerId) {
+  const wrap = $(containerId);
+  const input = wrap.querySelector('.tag-field');
+  const chips = wrap.querySelector('.chips');
+  const addBtn = wrap.querySelector('.tag-add');
+  const count = wrap.querySelector('.tag-count');
+
+  const render = function () {
+    chips.innerHTML = state.data[key].map(function (t, i) {
+      return '<span class="chip tag-chip">' + escapeHtml(t) +
+        '<button type="button" class="chip-remove" data-i="' + i + '" aria-label="删除标签">×</button></span>';
+    }).join('');
+    count.textContent = '(' + state.data[key].length + '个)';
+  };
+  tagRenderers[key] = render;
+
+  const addTag = function () {
+    const v = input.value.trim();
+    if (v && state.data[key].indexOf(v) === -1) {
+      state.data[key].push(v);
+      render();
+      scheduleRender();
+      scheduleSave();
+    }
+    input.value = '';
+  };
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag();
+    } else if (e.key === 'Backspace' && !input.value && state.data[key].length) {
+      state.data[key].pop();
+      render();
+      scheduleRender();
+      scheduleSave();
+    }
+  });
+  input.addEventListener('blur', addTag);
+  addBtn.addEventListener('click', addTag);
+
+  chips.addEventListener('click', function (e) {
+    const btn = e.target.closest('.chip-remove');
+    if (btn) {
+      state.data[key].splice(Number(btn.dataset.i), 1);
+      render();
+      scheduleRender();
+      scheduleSave();
+    }
+  });
+
+  render();
+}
+
+function renderTagChips(key) {
+  if (tagRenderers[key]) tagRenderers[key]();
+}
+
+/* ================= 预览区渲染 ================= */
+function renderPreview() {
+  const d = state.data;
+  const has = function (v) { return String(v == null ? '' : v).trim() !== ''; };
+
+  const name = escapeHtml(d.name);
+  const title = escapeHtml(d.title);
+  const phone = escapeHtml(d.phone);
+  const email = escapeHtml(d.email);
+
+  /* 头像：已上传图片优先，否则姓名首字母 SVG */
+  const avatarHtml = d.avatar
+    ? '<img class="avatar" src="' + d.avatar + '" alt="头像">'
+    : '<img class="avatar" src="' + svgAvatar(d.name) + '" alt="头像">';
+
+  let idHtml = '';
+  if (d.avatar || has(d.name) || has(d.title)) {
+    idHtml = '<div class="resume-id">' + avatarHtml +
+      '<div class="id-text">' +
+        (has(d.name) ? '<h1 class="resume-name">' + name + '</h1>' : '') +
+        (has(d.title) ? '<p class="resume-title">' + title + '</p>' : '') +
+      '</div></div>';
+  }
+
+  let contactHtml = '';
+  if (has(d.phone) || has(d.email)) {
+    contactHtml = '<div class="resume-contact">' +
+      (has(d.phone) ? '<p>📞 ' + phone + '</p>' : '') +
+      (has(d.email) ? '<p>✉️ ' + email + '</p>' : '') +
+    '</div>';
+  }
+
+  let headerHtml = '';
+  if (idHtml || contactHtml) {
+    headerHtml = '<header class="resume-header">' + idHtml + contactHtml + '</header>';
+  }
+
+  const section = function (t, html) {
+    return '<section class="resume-section"><h2 class="preview-heading">' + t + '</h2>' + html + '</section>';
+  };
+  const chip = function (t, cls) {
+    return '<span class="chip ' + cls + '">' + escapeHtml(t) + '</span>';
+  };
+
+  /* 预览结构：特质标签云 → 技能标签云 → 分割线 → 简介 → 教育 → 经历 → 座右铭 */
+  let bodyHtml = '';
+  if (d.traits.length) {
+    bodyHtml += section('个人特质', '<div class="tag-cloud">' + d.traits.map(function (t) { return chip(t, 'chip-trait'); }).join('') + '</div>');
+  }
+  if (d.skills.length) {
+    bodyHtml += section('专业技能', '<div class="tag-cloud">' + d.skills.map(function (t) { return chip(t, 'chip-skill'); }).join('') + '</div>');
+  }
+
+  const hasCloud = d.traits.length || d.skills.length;
+  const hasDetail = has(d.bio) || has(d.education) || has(d.experience) || has(d.motto);
+  if (hasCloud && hasDetail) bodyHtml += '<hr class="resume-divider">';
+
+  if (has(d.bio)) bodyHtml += section('个人简介', '<p class="text-block">' + escapeHtml(d.bio) + '</p>');
+  if (has(d.education)) bodyHtml += section('教育经历', '<div class="text-block">' + escapeHtml(d.education) + '</div>');
+  if (has(d.experience)) bodyHtml += section('工作/项目经历', '<div class="text-block">' + escapeHtml(d.experience) + '</div>');
+  if (has(d.motto)) bodyHtml += '<blockquote class="motto">“' + escapeHtml(d.motto) + '”</blockquote>';
+
+  if (!headerHtml && !bodyHtml) {
+    bodyHtml = '<p class="empty-hint">👈 在左侧填写信息，简历将实时预览</p>';
+  }
+
+  $('resume').innerHTML = headerHtml + (bodyHtml ? '<div class="resume-body">' + bodyHtml + '</div>' : '');
+}
+
+/* ================= 表单绑定（input 实时渲染 + 防抖保存） ================= */
+function bindTextField(id, key) {
+  $(id).addEventListener('input', function () {
+    state.data[key] = this.value;
+    scheduleRender();
+    scheduleSave();
+  });
+}
+
+function bindTextFields() {
+  bindTextField('f-name', 'name');
+  bindTextField('f-title', 'title');
+  bindTextField('f-phone', 'phone');
+  bindTextField('f-email', 'email');
+  bindTextField('f-bio', 'bio');
+  bindTextField('f-education', 'education');
+  bindTextField('f-experience', 'experience');
+  bindTextField('f-motto', 'motto');
+}
+
+/* 将 state 中的数据回填到表单（导入后 / 初始化时使用） */
+function renderForm() {
+  $('f-name').value = state.data.name || '';
+  $('f-title').value = state.data.title || '';
+  $('f-phone').value = state.data.phone || '';
+  $('f-email').value = state.data.email || '';
+  $('f-bio').value = state.data.bio || '';
+  $('f-education').value = state.data.education || '';
+  $('f-experience').value = state.data.experience || '';
+  $('f-motto').value = state.data.motto || '';
+  renderTagChips('skills');
+  renderTagChips('traits');
+  updateAvatarStatus();
+}
+
+/* ================================================================
+   ===== 数据导入导出 =====
+   导出：JSON 复制到剪贴板（含头像 Base64）；导入：文件选择 + 格式校验
+   ================================================================ */
+function initExportImport() {
+  $('export-json-btn').addEventListener('click', exportJSON);
+  $('print-btn').addEventListener('click', function () { window.print(); });
+
+  $('import-btn').addEventListener('click', function () { $('import-file').click(); });
+  $('import-file').addEventListener('change', function (e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function () { importJSON(reader.result); };
+    reader.readAsText(file);
+  });
+}
+
+function exportJSON() {
+  const payload = Object.assign({}, state.data, { avatar: state.data.avatar || '' });
+  const json = JSON.stringify(payload, null, 2);
+  if (String(payload.avatar).length > 100 * 1024) {
+    alert('头像数据较大，导出文件可能较大');
+  }
+  try {
+    navigator.clipboard.writeText(json).then(function () {
+      showToast('✅ JSON 已复制到剪贴板');
+    }, function () { legacyCopy(json); });
+  } catch (e) { legacyCopy(json); }
+}
+
+function legacyCopy(json) {
+  const ta = document.createElement('textarea');
+  ta.value = json;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  ta.remove();
+  showToast(ok ? '✅ JSON 已复制到剪贴板' : '❌ 复制失败，请手动复制');
+}
+
+function importJSON(text) {
+  let obj = null;
+  try { obj = JSON.parse(text); } catch (e) { obj = null; }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+    alert('JSON 格式无效，导入失败');
+    return;
+  }
+  ['name', 'title', 'phone', 'email', 'bio', 'education', 'experience', 'motto', 'avatarName'].forEach(function (k) {
+    if (typeof obj[k] === 'string') state.data[k] = obj[k];
+  });
+  if (Array.isArray(obj.skills)) state.data.skills = obj.skills.map(String).filter(Boolean);
+  if (Array.isArray(obj.traits)) state.data.traits = obj.traits.map(String).filter(Boolean);
+  if (typeof obj.avatar === 'string' && /^data:image\//.test(obj.avatar)) {
+    state.data.avatar = obj.avatar; /* 恢复头像并随 persist() 存入 resumeAvatar 键 */
+  }
+  renderForm();
+  renderPreview();
+  persist();
+  showToast('✅ 数据导入成功');
+}
+
+/* ================= 键盘快捷键 ================= */
+function initShortcuts() {
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = (e.key || '').toLowerCase();
+    if (k === 's') { e.preventDefault(); exportJSON(); }     /* Ctrl+S 导出 JSON */
+    else if (k === 'p') { e.preventDefault(); window.print(); } /* Ctrl+P 导出 PDF */
+  });
+}
+
+/* ================= 背景音乐（Web Audio API 生成简单循环旋律） ================= */
+const MELODY = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.00, 698.46];
+let audioCtx = null;
+let musicTimer = null;
+let musicOn = false;
+
+function initMusic() {
+  $('music-btn').addEventListener('click', function () {
+    if (musicOn) stopMusic(); else startMusic();
+  });
+  /* 尝试自动播放（通常会被浏览器拦截） */
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'running') {
+      startMusic();
+    } else {
+      showToast('点击页面任意处播放音乐 🎵');
+      document.addEventListener('click', function once() {
+        startMusic();
+        document.removeEventListener('click', once);
+      }, { once: true });
+    }
+  } catch (e) { /* 不支持 Web Audio，静默忽略 */ }
+}
+
+function startMusic() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  }
+  if (audioCtx.resume) { try { audioCtx.resume(); } catch (e) { /* 忽略 */ } }
+  musicOn = true;
+  $('music-btn').textContent = '⏸️ 暂停音乐';
+  let step = 0;
+  musicTimer = setInterval(function () {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = MELODY[step % MELODY.length];
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.07, t + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.45);
+    step++;
+  }, 300);
+}
+
+function stopMusic() {
+  musicOn = false;
+  clearInterval(musicTimer);
+  musicTimer = null;
+  $('music-btn').textContent = '▶️ 播放音乐';
+}
+
+/* ================= 鼠标跟随装饰（右下角 🐰） ================= */
+function initCursorEmoji() {
+  const el = $('cursor-emoji');
+  let raf = null;
+  document.addEventListener('mousemove', function (e) {
+    if (raf) return;
+    raf = requestAnimationFrame(function () {
+      const dx = (e.clientX / window.innerWidth - 0.5) * 26;
+      const dy = (e.clientY / window.innerHeight - 0.5) * 26;
+      el.style.transform = 'translate(' + dx.toFixed(1) + 'px, ' + dy.toFixed(1) + 'px)';
+      raf = null;
+    });
+  });
+}
+
+/* ================= 初始化 ================= */
+function init() {
+  state.data = loadData();
+
+  /* 恢复上次主题 */
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  setTheme(['classic', 'glass', 'zen', 'noir'].indexOf(savedTheme) !== -1 ? savedTheme : 'classic');
+
+  initAvatar();
+  initTagInput('skills', 'tag-skills');
+  initTagInput('traits', 'tag-traits');
+  renderForm();
+  renderPreview();
+  bindTextFields();
+  initCollapse();
+  initThemeDots();
+  initExportImport();
+  initShortcuts();
+  initMusic();
+  initCursorEmoji();
+}
+
+init();
+</script>
+</body>
+</html>
