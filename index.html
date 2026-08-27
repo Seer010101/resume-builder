@@ -984,15 +984,6 @@ button, input, select, textarea { font-family: inherit; }
   to { opacity: 1; }
 }
 
-/* Hero 滚动淡出（原生 scroll-driven） */
-.hero {
-  animation: heroFade linear both;
-  animation-timeline: scroll(root);
-  animation-range: 0 42vh;
-}
-@keyframes heroFade {
-  to { opacity: 0; transform: translateY(-70px); filter: blur(7px); }
-}
 .hero-title {
   margin: 0 0 20px;
   font-size: clamp(44px, 8vw, 88px);
@@ -1131,35 +1122,9 @@ button, input, select, textarea { font-family: inherit; }
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   padding: 28px 26px;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(34px);
-  transition: opacity .7s ease, transform .7s var(--ease-out-expo), border-color .25s ease;
+  overflow: hidden;`r`n  transition: border-color .25s ease;
 }
-/* 卡片内跟随鼠标的光 */
-.feature::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), var(--brand-soft), transparent 65%);
-  opacity: 0;
-  transition: opacity .3s ease;
-  pointer-events: none;
-}
-.feature:hover::before { opacity: 1; }
-.feature.in { opacity: 1; transform: none; }
 .feature:hover { border-color: var(--border-l2); transform: translateY(-3px); }
-.feature.in:hover { transform: translateY(-3px); }
-/* 原生滚动驱动动画（现代浏览器）：特性区块滚动进入视口时依次浮现 */
-@supports (animation-timeline: view()) {
-  .feature { animation: revealUp linear both; animation-timeline: view(); animation-range: entry 0% entry 34%; }
-  .features-title, .features-sub { animation: revealUp linear both; animation-timeline: view(); animation-range: entry 0% entry 30%; }
-  .feature:hover, .feature.in:hover { transform: translateY(-3px) !important; }
-}
-@keyframes revealUp {
-  from { opacity: 0; transform: translateY(48px); }
-  to { opacity: 1; transform: none; }
-}
 .feature-icon {
   width: 42px; height: 42px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
@@ -1868,13 +1833,13 @@ button, input, select, textarea { font-family: inherit; }
     print-color-adjust: exact !important;
   }
   html, body { background: #ffffff !important; height: auto !important; overflow: visible !important; }
-  .topbar, .view-home, .studio-bar, .preview-bar, .dock, .save-status, .import-link,
+  .topbar, .studio-bar, .preview-bar, .dock, .save-status, .import-link,
   .cursor-glow, .bg-grid, .aurora, .stars-layer, .petals, .modal, .page-footer,
   .toast, .empty-hint, .missing-hint, .grain, .scroll-progress, .preloader, .corridor-hint, .sketch,
   .corridor-hud, .corridor-scene, .corridor-hint-bar, .corridor-end-cta, .paper-transition {
     display: none !important;
   }
-  .view, .view-studio { display: block !important; height: auto !important; animation: none !important; }
+  .view { display: block !important; height: auto !important; animation: none !important; }`r`n  .view-home { display: none !important; }`r`n  .resume-section, .dig-section, .dig-card { animation: none !important; opacity: 1 !important; }
   .stage { display: block !important; min-height: 0 !important; padding: 0 !important; perspective: none !important; }
   .resume-wrap { transform: none !important; width: 100% !important; }
   .resume {
@@ -3280,24 +3245,6 @@ function initParallax() {
   });
 }
 
-/* ================= 滚动叙事（首页特性区块） ================= */
-function initReveal() {
-  /* 现代浏览器优先使用原生 CSS scroll-driven animations */
-  if ('animationTimeline' in document.documentElement.style) return;
-  const obs = new IntersectionObserver(function (entries) {
-    entries.forEach(function (en) {
-      if (en.isIntersecting) {
-        en.target.classList.add('in');
-        obs.unobserve(en.target);
-      }
-    });
-  }, { threshold: 0.18 });
-  document.querySelectorAll('.feature').forEach(function (f, i) {
-    f.style.transitionDelay = (i * 0.08) + 's';
-    obs.observe(f);
-  });
-}
-
 /* ================= 磁吸按钮（Magnetic） ================= */
 function initMagnetic() {
   document.querySelectorAll('.magnetic').forEach(function (btn) {
@@ -3394,7 +3341,6 @@ function init() {
   initDock();
   initNav();
   initParallax();
-  initReveal();
   initMagnetic();
   initFeatureGlow();
   initStars();
