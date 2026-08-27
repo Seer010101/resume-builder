@@ -351,9 +351,7 @@ button, input, select, textarea { font-family: inherit; }
   display: flex; justify-content: space-between; align-items: center;
   gap: 10px; flex-wrap: wrap;
   padding: 10px 18px;
-  background: rgba(8, 8, 12, 0.5);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(10, 10, 15, 0.96);
   border-bottom: 1px solid var(--border-l1);
 }
 .brand { display: flex; align-items: center; gap: 11px; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
@@ -1155,9 +1153,7 @@ button, input, select, textarea { font-family: inherit; }
   position: sticky; top: 56px; z-index: 40;
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   padding: 10px 18px;
-  background: rgba(8, 8, 12, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(10, 10, 15, 0.96);
   border-bottom: 1px solid var(--border-l1);
 }
 .studio-bar .spacer { flex: 1; }
@@ -3064,11 +3060,12 @@ function renderForm() {
 function initExportImport() {
   $('export-json-btn').addEventListener('click', exportJSON);
   $('print-btn').addEventListener('click', function () {
-    /* 打印前确保进入工作室视图并强制纸质排版 */
-    goTo('studio');
+    /* 打印前直接切到工作室（跳过 View Transition，避免打印到转场中间帧）
+       并强制纸质排版，等布局与动画稳定后再打印 */
+    applyView('studio');
     closeDock();
     setMode('paper');
-    setTimeout(function () { window.print(); }, 150);
+    setTimeout(function () { window.print(); }, 650);
   });
 }
 
