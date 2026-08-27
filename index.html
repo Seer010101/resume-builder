@@ -662,7 +662,14 @@ button, input, select, textarea { font-family: inherit; }
   background: linear-gradient(90deg, var(--brand), var(--brand-2));
   opacity: .95;
 }
-.door-frame::after {`n  content: "";`n  position: absolute;`n  inset: 0;`n  pointer-events: none;`n  background: linear-gradient(180deg, transparent 60%, var(--brand-soft));`n  opacity: .5;`n}
+.door-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 60%, var(--brand-soft));
+  opacity: .5;
+}
 .door-no {
   position: absolute;
   top: 20px; left: 14px;
@@ -1480,11 +1487,11 @@ button, input, select, textarea { font-family: inherit; }
   flex: none;
 }
 .dig-card-title { font-size: 15px; font-weight: 700; color: #ffffff; margin: 0; }
-.dig-card-body { display: flex; gap: 18px; align-items: flex-start; }
+.dig-card-body { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 18px; align-items: flex-start; }
 .dig-card-text { flex: 1; min-width: 0; white-space: pre-line; font-size: 14.5px; line-height: 1.8; color: var(--dig-text); }
 .dig-card-photo {
-  flex: 0 0 auto;
-  width: 128px; height: 96px;
+  flex: 0 0 auto !important;
+  width: 128px !important; height: 96px !important;
   border-radius: 14px;
   object-fit: cover;
   border: 3px solid rgba(255, 255, 255, 0.18);
@@ -2377,7 +2384,7 @@ button, input, select, textarea { font-family: inherit; }
     </div>
   </div>
 </div>
-`n<div class="toast" id="toast">
+<div class="toast" id="toast">
   <span class="toast-icon" id="toast-icon">
     <svg class="check-svg" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="12" r="10" class="check-circle"></circle>
